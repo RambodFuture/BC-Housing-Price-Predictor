@@ -1,5 +1,5 @@
 '''
-Usage: 
+Usage:
 python3 preprocessing.py
 
 Person 4:
@@ -57,7 +57,7 @@ X_test_processed = preprocessor.transform(X_test)
 print("Training data shape:", X_train_processed.shape)
 print("Test data shape:", X_test_processed.shape)
 
-# optional: 
+# optional:
 #
 # if person 4 wants to load the processed data
 # directly (instead of rerunning preprocessing), they can
@@ -70,9 +70,9 @@ print("Test data shape:", X_test_processed.shape)
 # y_train = np.load("y_train.npy")
 # y_test = np.load("y_test.npy")
 
-# import numpy as np
-#
-# np.save("X_train.npy", X_train_processed)
-# np.save("X_test.npy", X_test_processed)
-# np.save("y_train.npy", y_train)
-# np.save("y_test.npy", y_test)
+import numpy as np
+
+np.save("X_train.npy", X_train_processed.toarray())
+np.save("X_test.npy", X_test_processed.toarray())
+np.save("y_train.npy", y_train.to_numpy())
+np.save("y_test.npy", y_test.to_numpy())
