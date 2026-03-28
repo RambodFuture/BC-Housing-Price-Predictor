@@ -75,12 +75,18 @@ def evaluate(model, name):
     print(f"  MSE: {mse:.2f}")
     print(f"  R²:  {r2:.4f}")
 
-print("\n====================")
-print(" Model Performance")
-print("====================")
 
-evaluate(dt_model, "Decision Tree")
-evaluate(rf_model, "Random Forest")
-evaluate(knn_model, "KNN")
-evaluate(ridge_model, "Ridge Regression")
-evaluate(lasso_model, "Lasso Regression")
+# -----------------------------
+# Main Execution
+# -----------------------------
+if __name__ == "__main__":
+    print("\n====================")
+    print(" Model Performance")
+    print("====================")
+
+    evaluate(dt_model, "Decision Tree")
+    evaluate(rf_model, "Random Forest")
+    evaluate(knn_model, "KNN")
+    evaluate(ridge_model, "Ridge Regression")
+    evaluate(lasso_model, "Lasso Regression")
+s
