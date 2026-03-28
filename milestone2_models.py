@@ -51,7 +51,7 @@ ridge_model.fit(X_train, y_train)
 # -----------------------------
 lasso_model = Pipeline([
     ("preprocess", preprocessor),
-    ("model", Lasso())
+    ("model", Lasso(alpha=0.01, max_iter=5000))
 ])
 lasso_model.fit(X_train, y_train)
 
@@ -62,3 +62,25 @@ joblib.dump(rf_model, "random_forest.pkl")
 joblib.dump(knn_model, "knn.pkl")
 joblib.dump(ridge_model, "ridge.pkl")
 joblib.dump(lasso_model, "lasso.pkl")
+# -----------------------------
+# Model Evaluation
+# -----------------------------
+from sklearn.metrics import mean_squared_error, r2_score
+
+def evaluate(model, name):
+    preds = model.predict(X_test)
+    mse = mean_squared_error(y_test, preds)
+    r2 = r2_score(y_test, preds)
+    print(f"\n{name} Results:")
+    print(f"  MSE: {mse:.2f}")
+    print(f"  R²:  {r2:.4f}")
+
+print("\n====================")
+print(" Model Performance")
+print("====================")
+
+evaluate(dt_model, "Decision Tree")
+evaluate(rf_model, "Random Forest")
+evaluate(knn_model, "KNN")
+evaluate(ridge_model, "Ridge Regression")
+evaluate(lasso_model, "Lasso Regression")
