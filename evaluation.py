@@ -233,12 +233,6 @@ for model_name, pkl_color in [("Random Forest", PALETTE[4]), ("Decision Tree", P
     plt.close()
  
 # Console summary
-
-for _, row in results_df.iterrows():
-    r = results[row["Model"]]
-    print(f"  {row['Model']:<22}  MAE=${r['MAE']:>10,.0f} "
-          f"RMSE=${r['RMSE']:>10,.0f}  R²={r['R²']:.4f}")
- 
 best = results_df.iloc[0]["Model"]
 print(f"\n  Best model: {best}  "
       f"(RMSE=${results[best]['RMSE']:,.0f}, R²={results[best]['R²']:.4f})")
