@@ -13,9 +13,18 @@ import joblib
  
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
+from sklearn.inspection import PartialDependenceDisplay
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-from preprocessing import preprocessor, X_train, X_test, y_train, y_test
+from preprocessing import (
+    preprocessor,
+    X_train,
+    X_test,
+    y_train,
+    y_test,
+    numerical_cols,
+    categorical_cols
+)
 
 sns.set_theme(style="whitegrid", palette="muted", font_scale=1.05)
 PALETTE = ["#4C72B0", "#DD8452", "#55A868", "#C44E52", "#8172B3", "#937860"]
@@ -68,14 +77,12 @@ print()
 
 # Helper: extract feature names from any pipeline in this project
 
-def get_feature_names(pipeline):
-    pre = pipeline.named_steps["preprocess"]
-    num_feats = list(pre.transformers_[0][2])          
-    ohe = pre.transformers_[1][1]                 
-    cat_feats = ohe.get_feature_names_out(
-        ["City", "Property Type"]
-    ).tolist()
-    return num_feats + cat_feats
+def get_feature_names_from_pipeline(pipeline):
+    preprocess = pipeline.named_steps["preprocess"]
+    num_features = numerical_cols
+    cat_encoder = preprocess.named_transformers_["cat"]
+    cat_features = cat_encoder.get_feature_names_out(categorical_cols).tolist()
+    return list(num_features) + cat_features
 
 
 # Comparison table
@@ -206,13 +213,38 @@ path = f"{PLOTS_DIR}/residual_distributions.png"
 plt.savefig(path, dpi=150, bbox_inches="tight")
 plt.close()
 
+# Residuals vs Predicted (NEW)
+
+fig, axes = plt.subplots(2, 3, figsize=(16, 10))
+fig.suptitle("Residuals vs. Predicted Values", fontsize=15, fontweight="bold", y=1.01)
+
+for ax, (name, color) in zip(axes.flat, zip(model_order, PALETTE)):
+    y_pred = predictions[name]
+    residuals = y_test_arr - y_pred
+
+    ax.scatter(y_pred, residuals, alpha=0.3, s=10, color=color, rasterized=True)
+    ax.axhline(0, color="black", linestyle="--", linewidth=1.2)
+
+    ax.set_title(name, fontsize=10, fontweight="bold")
+    ax.set_xlabel("Predicted Price")
+    ax.set_ylabel("Residual")
+
+    ax.xaxis.set_major_formatter(
+        mticker.FuncFormatter(lambda x, _: f"${x/1e6:.1f}M"))
+    ax.yaxis.set_major_formatter(
+        mticker.FuncFormatter(lambda x, _: f"${x/1e3:.0f}k"))
+
+plt.tight_layout()
+plt.savefig(f"{PLOTS_DIR}/residuals_vs_predicted.png", dpi=150, bbox_inches="tight")
+plt.close()
+
 # Feature importances (Random Forest & Decision Tree)
 
 TOP_N = 20
  
 for model_name, pkl_color in [("Random Forest", PALETTE[4]), ("Decision Tree", PALETTE[3])]:
     pipeline = models[model_name]
-    feature_names = get_feature_names(pipeline)
+    feature_names = get_feature_names_from_pipeline(pipeline)
     importances = pipeline.named_steps["model"].feature_importances_
  
     top_idx = np.argsort(importances)[-TOP_N:]
@@ -232,7 +264,79 @@ for model_name, pkl_color in [("Random Forest", PALETTE[4]), ("Decision Tree", P
     plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
  
+# -----------------------------
+# Real Outlier Detection (NEW)
+# -----------------------------
+
+best_model_name = results_df.iloc[0]["Model"]
+best_preds = predictions[best_model_name]
+
+analysis_df = pd.DataFrame(X_test).reset_index(drop=True)
+analysis_df["Actual Price"] = np.array(y_test.reset_index(drop=True))
+analysis_df["Predicted Price"] = best_preds
+analysis_df["Residual"] = analysis_df["Actual Price"] - analysis_df["Predicted Price"]
+analysis_df["Absolute Error"] = np.abs(analysis_df["Residual"])
+
+# Top 1% biggest errors
+threshold = analysis_df["Absolute Error"].quantile(0.99)
+outliers = analysis_df[analysis_df["Absolute Error"] >= threshold]
+
+outliers.sort_values("Absolute Error", ascending=False).to_csv(
+    f"{PLOTS_DIR}/top_outliers.csv",
+    index=False
+)
+
+print("\nTop 10 largest prediction errors:")
+print(
+    outliers.sort_values("Absolute Error", ascending=False)
+    .head(10)
+    .to_string(index=False)
+)
+
+
 # Console summary
 best = results_df.iloc[0]["Model"]
 print(f"\n  Best model: {best}  "
       f"(RMSE=${results[best]['RMSE']:,.0f}, R²={results[best]['R²']:.4f})")
+
+# -----------------------------
+# Partial Dependence Plots (NEW)
+# -----------------------------
+
+tree_models = ["Random Forest", "Decision Tree"]
+
+best_tree_model_name = min(
+    tree_models,
+    key=lambda m: results[m]["RMSE"]
+)
+
+best_tree_model = models[best_tree_model_name]
+
+features = numerical_cols
+
+fig, ax = plt.subplots(3, 2, figsize=(14, 12))
+ax = ax.flatten()
+
+PartialDependenceDisplay.from_estimator(
+    best_tree_model,
+    X_test,
+    features=features,
+    ax=ax[:len(features)]
+)
+
+for extra_ax in ax[len(features):]:
+    extra_ax.remove()
+
+fig.suptitle(
+    f"Partial Dependence - {best_tree_model_name}",
+    fontsize=15,
+    fontweight="bold"
+)
+
+plt.tight_layout()
+plt.savefig(
+    f"{PLOTS_DIR}/pdp_{best_tree_model_name.lower().replace(' ', '_')}.png",
+    dpi=150,
+    bbox_inches="tight"
+)
+plt.close()
