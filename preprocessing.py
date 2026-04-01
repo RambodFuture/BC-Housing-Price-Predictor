@@ -7,7 +7,7 @@ Refer to bottom of the file for saving as a NumPy for easy access
 '''
 
 import pandas as pd
-
+import joblib 
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -76,3 +76,5 @@ np.save("X_train.npy", X_train_processed.toarray())
 np.save("X_test.npy", X_test_processed.toarray())
 np.save("y_train.npy", y_train.to_numpy())
 np.save("y_test.npy", y_test.to_numpy())
+
+joblib.dump(preprocessor, "preprocessor.pkl")
