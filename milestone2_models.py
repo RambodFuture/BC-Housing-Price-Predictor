@@ -89,4 +89,3 @@ if __name__ == "__main__":
     evaluate(knn_model, "KNN")
     evaluate(ridge_model, "Ridge Regression")
     evaluate(lasso_model, "Lasso Regression")
-s
