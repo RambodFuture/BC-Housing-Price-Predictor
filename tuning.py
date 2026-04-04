@@ -8,10 +8,7 @@ from sklearn.linear_model import Ridge, Lasso
 from sklearn.pipeline import Pipeline
 
 # Load processed data
-X_train = np.load("X_train.npy")
-X_test = np.load("X_test.npy")
-y_train = np.load("y_train.npy")
-y_test = np.load("y_test.npy")
+from preprocessing import preprocessor, X_train, X_test, y_train, y_test
 
 # Load preprocessor
 preprocessor = joblib.load("preprocessor.pkl")
