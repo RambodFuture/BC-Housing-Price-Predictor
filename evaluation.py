@@ -46,11 +46,11 @@ lr_pipeline.fit(X_train, y_train)
  
 models = {
     "Linear Regression": lr_pipeline,
-    "Ridge": load_or_warn("ridge.pkl"),
-    "Lasso": load_or_warn("lasso.pkl"),
-    "Decision Tree": load_or_warn("decision_tree.pkl"),
-    "KNN": load_or_warn("knn.pkl"),
-    "Random Forest": load_or_warn("random_forest.pkl"),
+    "Ridge": load_or_warn("best_ridge.pkl"),
+    "Lasso": load_or_warn("best_lasso.pkl"),
+    "Decision Tree": load_or_warn("best_decision_tree.pkl"),
+    "KNN": load_or_warn("best_knn.pkl"),
+    "Random Forest": load_or_warn("best_random_forest.pkl"),
 }
 
 
