@@ -51,7 +51,7 @@ dt_params = {
 
 rf_params = {
     "model__n_estimators": [100, 200],
-    "model__max_depth": [10, 20, None],
+    "model__max_depth": [10, 20],
     "model__min_samples_split": [2, 5],
     "model__min_samples_leaf": [1, 2]
 }
@@ -72,10 +72,11 @@ lasso_params = {
 }
 
 # Run tuning
-run_grid_search("Decision Tree", DecisionTreeRegressor(), dt_params)
-run_grid_search("Random Forest", RandomForestRegressor(), rf_params)
-run_grid_search("KNN", KNeighborsRegressor(), knn_params)
-run_grid_search("Ridge", Ridge(), ridge_params)
-run_grid_search("Lasso", Lasso(), lasso_params)
+if __name__ == "__main__":
+    run_grid_search("Decision Tree", DecisionTreeRegressor(), dt_params)
+    run_grid_search("Random Forest", RandomForestRegressor(), rf_params)
+    run_grid_search("KNN", KNeighborsRegressor(), knn_params)
+    run_grid_search("Ridge", Ridge(), ridge_params)
+    run_grid_search("Lasso", Lasso(), lasso_params)
 
-print("Hyperparameter tuning complete.")
+    print("Hyperparameter tuning complete.")
